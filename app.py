@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 import requests
 from flask_cors import CORS
+import os
 
 app = Flask(__name__)
 CORS(app)  # Agar bisa diakses dari frontend React
@@ -27,3 +28,8 @@ def proxy():
 @app.route("/", methods=["GET"])
 def index():
     return "Proxy server is running", 200
+
+# ✅ Tambahkan ini agar Railway tahu port-nya
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))  # Gunakan env PORT jika ada, default 5000
+    app.run(host="0.0.0.0", port=port)
