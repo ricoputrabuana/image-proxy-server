@@ -4,7 +4,7 @@ from flask_cors import CORS
 import os
 
 app = Flask(__name__)
-CORS(app)  # Agar bisa diakses dari frontend React
+CORS(app, origins=["https://image-enhancer-frontend-green.vercel.app"])
 
 @app.route("/proxy", methods=["POST"])
 def proxy():
