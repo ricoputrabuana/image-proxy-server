@@ -1,27 +1,20 @@
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 import requests
-import os  # ← tambahkan ini
+import os
 
 app = Flask(__name__)
+CORS(app)  # Mengizinkan semua origin (terbuka untuk testing)
 
-@app.after_request
-def add_cors_headers(response):
-    response.headers.add("Access-Control-Allow-Origin", "*")
-    response.headers.add("Access-Control-Allow-Headers", "Content-Type")
-    response.headers.add("Access-Control-Allow-Methods", "POST, OPTIONS")
-    return response
-
-@app.route("/proxy", methods=["POST", "OPTIONS"])
+@app.route("/proxy", methods=["POST"])
 def proxy():
-    if request.method == "OPTIONS":
-        return '', 204
-
     try:
         data = request.get_json()
         image_data = data.get("data")
         if not image_data:
             return jsonify({"error": "No image data provided"}), 400
 
+        # Kirim request ke backend Hugging Face
         response = requests.post(
             "https://ricoputra1708-image-enhancer.hf.space/predict/",
             json={"data": [image_data]},
@@ -29,6 +22,7 @@ def proxy():
         )
 
         return jsonify(response.json()), response.status_code
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -36,7 +30,7 @@ def proxy():
 def index():
     return "Proxy server is running", 200
 
-# ⬇️ INI BAGIAN PENTING UNTUK RAILWAY
+# Bagian penting agar Railway bisa menjalankan app
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PORT", 5000))  # Gunakan port dari Railway
     app.run(host="0.0.0.0", port=port)
