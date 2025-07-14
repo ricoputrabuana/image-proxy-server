@@ -1,19 +1,20 @@
 from flask import Flask, request, jsonify, make_response
-from flask_cors import CORS
 import requests
 
 app = Flask(__name__)
-CORS(app)  # Basic CORS, tapi tetap handle OPTIONS secara eksplisit
+
+@app.after_request
+def add_cors_headers(response):
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.headers.add("Access-Control-Allow-Headers", "Content-Type")
+    response.headers.add("Access-Control-Allow-Methods", "POST, OPTIONS")
+    return response
 
 @app.route("/proxy", methods=["POST", "OPTIONS"])
 def proxy():
-    # Tangani preflight CORS (OPTIONS)
     if request.method == "OPTIONS":
-        response = make_response()
-        response.headers.add("Access-Control-Allow-Origin", "*")
-        response.headers.add("Access-Control-Allow-Headers", "Content-Type")
-        response.headers.add("Access-Control-Allow-Methods", "POST, OPTIONS")
-        return response
+        # Response untuk preflight
+        return '', 204
 
     try:
         data = request.get_json()
@@ -27,13 +28,9 @@ def proxy():
             headers={"Content-Type": "application/json"}
         )
 
-        proxy_response = make_response(jsonify(response.json()), response.status_code)
-        proxy_response.headers.add("Access-Control-Allow-Origin", "*")
-        return proxy_response
+        return jsonify(response.json()), response.status_code
     except Exception as e:
-        err_response = make_response(jsonify({"error": str(e)}), 500)
-        err_response.headers.add("Access-Control-Allow-Origin", "*")
-        return err_response
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/", methods=["GET"])
 def index():
