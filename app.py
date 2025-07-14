@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, make_response
 import requests
+import os  # ← tambahkan ini
 
 app = Flask(__name__)
 
@@ -13,7 +14,6 @@ def add_cors_headers(response):
 @app.route("/proxy", methods=["POST", "OPTIONS"])
 def proxy():
     if request.method == "OPTIONS":
-        # Response untuk preflight
         return '', 204
 
     try:
@@ -35,3 +35,8 @@ def proxy():
 @app.route("/", methods=["GET"])
 def index():
     return "Proxy server is running", 200
+
+# ⬇️ INI BAGIAN PENTING UNTUK RAILWAY
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
