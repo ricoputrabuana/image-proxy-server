@@ -13,6 +13,7 @@ def add_cors_headers(response):
     return response
 
 # Tangani OPTIONS untuk preflight
+@app.route("/proxy", methods=["POST", "OPTIONS"])
 @app.route("/proxy/", methods=["POST", "OPTIONS"])
 def proxy():
     if request.method == "OPTIONS":
