@@ -6,7 +6,7 @@ import os
 app = Flask(__name__)
 CORS(app)  # Mengizinkan semua origin (terbuka untuk testing)
 
-@app.route("/proxy", methods=["POST"])
+@app.route("/proxy", methods=["POST", "OPTIONS"], strict_slashes=False)
 def proxy():
     try:
         data = request.get_json()
