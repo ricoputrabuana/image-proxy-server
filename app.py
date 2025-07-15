@@ -4,7 +4,7 @@ import os
 
 app = Flask(__name__)
 
-# Tambahkan header CORS setelah setiap request
+# CORS FIX
 @app.after_request
 def add_cors_headers(response):
     response.headers.add("Access-Control-Allow-Origin", "*")
@@ -12,15 +12,12 @@ def add_cors_headers(response):
     response.headers.add("Access-Control-Allow-Methods", "POST, OPTIONS")
     return response
 
-# Tangani OPTIONS untuk preflight
+# ROUTE FIX: support /proxy dan /proxy/
 @app.route("/proxy", methods=["POST", "OPTIONS"])
 @app.route("/proxy/", methods=["POST", "OPTIONS"])
 def proxy():
     if request.method == "OPTIONS":
-        # Ini penting! Jawab preflight OPTIONS dengan 204 No Content
-        response = jsonify({"message": "CORS Preflight OK"})
-        response.status_code = 204
-        return response
+        return '', 204
 
     try:
         data = request.get_json()
@@ -28,14 +25,14 @@ def proxy():
         if not image_data:
             return jsonify({"error": "No image data provided"}), 400
 
-        # Kirim request ke HuggingFace
-        response = requests.post(
+        # Call to Hugging Face backend
+        hf_response = requests.post(
             "https://ricoputra1708-image-enhancer.hf.space/predict/",
-            json={"data": [image_data]},
+            json={"data": image_data},
             headers={"Content-Type": "application/json"}
         )
 
-        return jsonify(response.json()), response.status_code
+        return jsonify(hf_response.json()), hf_response.status_code
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
