@@ -12,7 +12,7 @@ def add_cors_headers(response):
     response.headers.add("Access-Control-Allow-Methods", "POST, OPTIONS")
     return response
 
-# ROUTE FIX: support /proxy dan /proxy/
+# ROUTE: support /proxy dan /proxy/
 @app.route("/proxy", methods=["POST", "OPTIONS"])
 @app.route("/proxy/", methods=["POST", "OPTIONS"])
 def proxy():
@@ -25,14 +25,15 @@ def proxy():
         if not image_data:
             return jsonify({"error": "No image data provided"}), 400
 
-        # Call to Hugging Face backend
+        # ✅ FIXED: Send array to Hugging Face
         hf_response = requests.post(
-            "https://ricoputra1708-image-enhancer.hf.space/predict/",
-            json={"data": image_data},
+            "https://ricoputra1708-image-enhancer.hf.space/run/predict",
+            json={"data": [image_data]},
             headers={"Content-Type": "application/json"}
         )
 
         return jsonify(hf_response.json()), hf_response.status_code
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
